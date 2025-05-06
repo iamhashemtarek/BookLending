@@ -1,6 +1,9 @@
 ﻿using BookLending.Domain.Entities;
 using BookLending.Domain.Interfaces;
 using BookLending.Domain.Specifications;
+using BookLending.Infrastructure.Persistence;
+using BookLending.Infrastructure.Specifications;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,39 +14,44 @@ namespace BookLending.Infrastructure.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
-        public Task AddAsync(T entity)
+        private readonly BookLendingDbContext _context;
+        private readonly DbSet<T> _dbSet;
+        public GenericRepository(BookLendingDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
+            _dbSet = _context.Set<T>();
         }
-
-        public Task DeleteAsync(T entity)
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _dbSet.ToListAsync();
         }
-
-        public Task<IReadOnlyList<T>> GetAllAsync()
+        public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
         {
-            throw new NotImplementedException();
+            return await ApplySpecification(spec).ToListAsync();
         }
-
-        public Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
+        public async Task<T> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+           return await _dbSet.FindAsync(id);
         }
-
-        public Task<T> GetByIdAsync(int id)
+        public async Task<T> GetWithSpecAsync(ISpecification<T> spec)
         {
-            throw new NotImplementedException();
+            return await ApplySpecification(spec).FirstOrDefaultAsync();
         }
-
-        public Task<T> GetWithSpecAsync(ISpecification<T> spec)
+        public async Task AddAsync(T entity)
         {
-            throw new NotImplementedException();
+            await _dbSet.AddAsync(entity);
         }
-
-        public Task UpdateAsync(T entity)
+        public void Update(T entity)
         {
-            throw new NotImplementedException();
+            _dbSet.Update(entity);
+        }
+        public void Delete(T entity)
+        {
+            _dbSet.Remove(entity);
+        }
+        private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+        {
+            return SpecificationEvaluator<T>.GetQuery(_context.Set<T>(), spec);
         }
     }
 }

@@ -9,5 +9,6 @@ namespace BookLending.Domain.Entities
 {
     public class AppUser : IdentityUser
     {
+        public ICollection<Borrow> Borrows { get; set; }
     }
 }
