@@ -23,7 +23,7 @@ namespace BookLending.Infrastructure.Repositories
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.Where(x => !x.IsDeleted).ToListAsync();
         }
         public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
         {
@@ -31,7 +31,7 @@ namespace BookLending.Infrastructure.Repositories
         }
         public async Task<T?> GetByIdAsync(int id)
         {
-           return await _dbSet.FindAsync(id);
+            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
         }
         public async Task<T?> GetWithSpecAsync(ISpecification<T> spec)
         {
