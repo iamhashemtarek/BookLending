@@ -1,11 +1,16 @@
 using BookLending.API.Middlewares;
 using BookLending.Application.Interfaces;
+using BookLending.Application.Mapping;
 using BookLending.Application.Services;
 using BookLending.Common.Errors;
 using BookLending.Domain.Entities;
+using BookLending.Domain.Interfaces;
 using BookLending.Infrastructure.Configuration;
 using BookLending.Infrastructure.Persistence;
 using BookLending.Infrastructure.Persistence.Seeding;
+using BookLending.Infrastructure.Repositories;
+using BookLending.Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +47,11 @@ namespace BookLending.API
 
             builder.Services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<BookLendingDbContext>();
-            builder.Services.AddAuthentication()
+            builder.Services.AddAuthentication(option =>
+            {
+                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -57,7 +66,13 @@ namespace BookLending.API
                     };
                 });
 
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAutoMapper(config => config.AddProfile(new MappingProfile()));
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IBookService, BookService>();
+            builder.Services.AddScoped<IBorrowService, BorrowService>();
+
 
             // Add Swagger Service
             builder.Services.AddEndpointsApiExplorer();
@@ -91,6 +106,7 @@ namespace BookLending.API
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
+            app.UseRouting(); 
 
             #region database migration & seeding 
             using var scope = app.Services.CreateScope();
@@ -129,8 +145,8 @@ namespace BookLending.API
                 });
             }
 
-            app.UseRouting(); 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers(); 
 

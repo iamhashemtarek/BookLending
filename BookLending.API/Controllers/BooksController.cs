@@ -20,7 +20,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks([FromBody] BookParameters bookParameters)
+        public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks([FromQuery] BookParameters bookParameters)
         {
             var books = await _bookService.GetAllBooksAsync(bookParameters);
             return Ok(books);

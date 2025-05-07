@@ -47,7 +47,8 @@ namespace BookLending.Infrastructure.Repositories
         }
         public void Delete(T entity)
         {
-            _dbSet.Remove(entity);
+            entity.IsDeleted = true;
+            _dbSet.Update(entity);
         }
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {

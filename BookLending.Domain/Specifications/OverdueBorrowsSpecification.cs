@@ -13,6 +13,8 @@ namespace BookLending.Domain.Specifications
         public OverdueBorrowsSpecification()
             : base(b => b.DueDate < DateTime.UtcNow && b.Status == BorrowStatus.Borrowed)
         {
+            AddCriteria(x => x.IsDeleted == false);
+
         }
     }
 }

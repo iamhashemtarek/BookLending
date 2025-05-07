@@ -12,7 +12,7 @@ namespace BookLending.Domain.Specifications
     {
         public BorrowSpecification()
         {
-            
+            AddCriteria(x => x.IsDeleted == false);
         }
         public BorrowSpecification(BorrowParameters borrowParameters)
             : base(x =>
@@ -25,6 +25,7 @@ namespace BookLending.Domain.Specifications
                 (borrowParameters.RemindersSent == null || x.RemindersSent == borrowParameters.RemindersSent)
             )
         {
+            AddCriteria(x => x.IsDeleted == false);
             _AddIncludes();
 
             if (!string.IsNullOrEmpty(borrowParameters.SortBy))
@@ -37,6 +38,8 @@ namespace BookLending.Domain.Specifications
 
         public BorrowSpecification(int id) : base(x => x.Id == id)
         {
+            AddCriteria(x => x.IsDeleted == false);
+
             _AddIncludes();
         }
 

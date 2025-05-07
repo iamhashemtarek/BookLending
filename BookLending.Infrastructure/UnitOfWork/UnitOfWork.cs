@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace BookLending.Infrastructure.UnitOfWork
 {
-    class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly BookLendingDbContext _context;
         private readonly Dictionary<Type, object> _repositories = new();

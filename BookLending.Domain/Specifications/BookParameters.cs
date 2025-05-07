@@ -9,9 +9,9 @@ namespace BookLending.Domain.Specifications
     public class BookParameters
     {
         private const int MAX_PAGE_SIZE = 10;
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string ISBN { get; set; }
+        public string? Title { get; set; }
+        public string? Author { get; set; }
+        public string? ISBN { get; set; }
         public int PublishedYear { get; set; }
         public string? SortBy { get; set; }
         public bool IsSortAscending { get; set; } = true;

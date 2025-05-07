@@ -11,7 +11,7 @@ namespace BookLending.Domain.Specifications
     {
         private const int MAX_PAGE_SIZE = 10;
         public int? BookId { get; set; }
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
         public DateTime? BorrowDate { get; set; }
         public DateTime? DueDate { get; set; }
         public DateTime? ReturnDate { get; set; }

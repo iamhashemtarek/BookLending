@@ -11,13 +11,15 @@ namespace BookLending.Domain.Specifications
     {
         public BookSpecification()
         {
+            AddCriteria(x => x.IsDeleted == false);
+
         }
         public BookSpecification(BookParameters bookParameters)
             : base(b => (string.IsNullOrEmpty(bookParameters.Title) || b.Title.Contains(bookParameters.Title)) &&
                         (string.IsNullOrEmpty(bookParameters.Author) || b.Author.Contains(bookParameters.Author)) &&
                         (string.IsNullOrEmpty(bookParameters.ISBN) || b.ISBN.Contains(bookParameters.ISBN)) &&
                         (bookParameters.PublishedYear == 0 || b.PublishedYear == bookParameters.PublishedYear) &&
-                        (b.IsDeleted == true))
+                        (b.IsDeleted == false))
         {
             if(!string.IsNullOrEmpty(bookParameters.SortBy))
                 AddSorting(bookParameters.SortBy, bookParameters.IsSortAscending);
@@ -31,6 +33,7 @@ namespace BookLending.Domain.Specifications
         public BookSpecification(int bookId)
             : base(b => b.Id == bookId)
         {
+            AddCriteria(x => x.IsDeleted == false);
         }
 
     }

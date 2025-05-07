@@ -11,6 +11,7 @@ namespace BookLending.Domain.Specifications
         public UserBorrowSpecification(string userId)
         {
             AddCriteria(x => x.UserId == userId);
+            AddCriteria(x => x.IsDeleted == false);
             _AddIncludes();
         }
     }

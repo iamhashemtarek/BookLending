@@ -21,7 +21,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BorrowDto>>> GetBorrows([FromBody] BorrowParameters borrowParameters)
+        public async Task<ActionResult<IEnumerable<BorrowDto>>> GetBorrows([FromQuery] BorrowParameters borrowParameters)
         {
             if (User.IsInRole("Admin"))
             {
