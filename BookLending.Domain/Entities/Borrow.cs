@@ -14,7 +14,7 @@ namespace BookLending.Domain.Entities
         public DateTime BorrowDate { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime? ReturnDate { get; set; }
-        public BorrowStatus Status { get; set; } = BorrowStatus.Active;
+        public BorrowStatus Status { get; set; } = BorrowStatus.Borrowed;
         public int RemindersSent { get; set; }
         public DateTime? LastReminderDate { get; set; }
         public Book Book { get; set; }

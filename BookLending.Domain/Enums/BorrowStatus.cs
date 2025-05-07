@@ -8,7 +8,7 @@ namespace BookLending.Domain.Enums
 {
     public enum BorrowStatus
     {
-        Active,
+        Borrowed,
         Returned,
         Overdue
     }
