@@ -9,6 +9,9 @@ namespace BookLending.Domain.Specifications
 {
     public class BookSpecification : Specification<Book>
     {
+        public BookSpecification()
+        {
+        }
         public BookSpecification(BookParameters bookParameters)
             : base(b => (string.IsNullOrEmpty(bookParameters.Title) || b.Title.Contains(bookParameters.Title)) &&
                         (string.IsNullOrEmpty(bookParameters.Author) || b.Author.Contains(bookParameters.Author)) &&

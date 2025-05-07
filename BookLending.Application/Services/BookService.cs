@@ -35,10 +35,6 @@ namespace BookLending.Application.Services
         public async Task DeleteBookAsync(int id)
         {
             var book = await _bookRepository.GetByIdAsync(id);
-            if (book == null)
-            {
-                throw new Exception("Book not found");
-            }
             _bookRepository.Delete(book);
             await unitOfWork.CompleteAsync();
             return;
@@ -58,13 +54,11 @@ namespace BookLending.Application.Services
             return _mapper.Map<IEnumerable<BookDto>>(books);
         }
 
-        public async Task<BookDto> GetBookByIdAsync(int id)
+        public async Task<BookDto?> GetBookByIdAsync(int id)
         {
             var book = await _bookRepository.GetByIdAsync(id);
             if (book == null)
-            {
-                throw new Exception("Book not found");
-            }
+                return null;
             return _mapper.Map<BookDto>(book);
         }
 

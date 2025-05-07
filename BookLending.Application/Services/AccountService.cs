@@ -73,7 +73,7 @@ namespace BookLending.Application.Services
             // private claims (user defined)
             var authClaims = new List<Claim>
             {
-                new Claim(ClaimTypes.GivenName, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email),
             };
 

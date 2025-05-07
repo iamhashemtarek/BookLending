@@ -29,11 +29,11 @@ namespace BookLending.Infrastructure.Repositories
         {
             return await ApplySpecification(spec).ToListAsync();
         }
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int id)
         {
            return await _dbSet.FindAsync(id);
         }
-        public async Task<T> GetWithSpecAsync(ISpecification<T> spec)
+        public async Task<T?> GetWithSpecAsync(ISpecification<T> spec)
         {
             return await ApplySpecification(spec).FirstOrDefaultAsync();
         }

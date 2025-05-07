@@ -26,11 +26,11 @@ namespace BookLending.Application.Services
             _borrowRepository = unitOfWork.Repository<Borrow>();
 
         }
-        public async Task<BorrowDto> BorrowBookAsync(string userId, BorrowBookDto borrowDto)
+        public async Task<BorrowDto?> BorrowBookAsync(string userId, BorrowBookDto borrowDto)
         {
             var book = await _unitOfWork.Repository<Book>().GetByIdAsync(borrowDto.BookId);
             if (book == null || book.IsAvailable == false)
-                throw new Exception("Book is not available for borrowing.");
+                return null;
 
             var borrow = new Borrow
             {
@@ -68,10 +68,12 @@ namespace BookLending.Application.Services
             return _mapper.Map<IEnumerable<BorrowDto>>(borrows);
         }
 
-        public async Task<BorrowDto> GetBorrowByIdAsync(int id)
+        public async Task<BorrowDto?> GetBorrowByIdAsync(int id)
         {
             var spec = new BorrowSpecification(id);
             var borrow = await _borrowRepository.GetWithSpecAsync(spec);
+            if (borrow == null)
+                return null;
             return _mapper.Map<BorrowDto>(borrow);
         }
 
