@@ -29,7 +29,7 @@ namespace BookLending.Application.Services
         public async Task<BorrowDto?> BorrowBookAsync(string userId, BorrowBookDto borrowDto)
         {
             var book = await _unitOfWork.Repository<Book>().GetByIdAsync(borrowDto.BookId);
-            if (book == null || book.IsAvailable == false)
+            if (book == null) //|| book.IsAvailable == false
                 return null;
 
             var borrow = new Borrow

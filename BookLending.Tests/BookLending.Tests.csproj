@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
@@ -19,8 +20,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ApplicationTests\" />
     <Folder Include="InfrastructureTests\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookLending.API\BookLending.API.csproj" />
+    <ProjectReference Include="..\BookLending.Application\BookLending.Application.csproj" />
+    <ProjectReference Include="..\BookLending.Common\BookLending.Common.csproj" />
+    <ProjectReference Include="..\BookLending.Domain\BookLending.Domain.csproj" />
+    <ProjectReference Include="..\BookLending.Infrastructure\BookLending.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

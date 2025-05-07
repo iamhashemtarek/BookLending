@@ -52,7 +52,7 @@ namespace BookLending.Infrastructure.Repositories
         }
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
-            return SpecificationEvaluator<T>.GetQuery(_context.Set<T>(), spec);
+            return SpecificationEvaluator<T>.GetQuery(_dbSet, spec);
         }
     }
 }

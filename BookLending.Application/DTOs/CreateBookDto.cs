@@ -14,5 +14,7 @@ namespace BookLending.Application.DTOs
         public int PublishedYear { get; set; }
         public string Description { get; set; }
         public string CoverImageUrl { get; set; }
+        public bool IsAvailable { get; set; } = true;
+
     }
 }
