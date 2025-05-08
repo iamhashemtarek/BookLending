@@ -12,5 +12,6 @@ namespace BookLending.Application.Interfaces
     {
         Task<string> RegisterAsync(CreateUserDto user);
         Task<string> LoginAsync(LoginDto user);
+        Task<string> CreateTokenAsync(AppUser user);
     }
 }

@@ -6,6 +6,7 @@ using BookLending.Domain.Entities;
 using BookLending.Domain.Enums;
 using BookLending.Domain.Interfaces;
 using BookLending.Domain.Specifications;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using System;
@@ -22,6 +23,7 @@ namespace BookLending.Tests.ApplicationTests.Services
         private readonly IGenericRepository<Borrow> _borrowRepository;
         private readonly IMapper _mapper;
         private readonly IBorrowService _borrowService;
+        private readonly ILogger<IBorrowService> _logger;
         public BorrowServiceTests()
         {
             _unitOfWork = Substitute.For<IUnitOfWork>();
@@ -29,7 +31,8 @@ namespace BookLending.Tests.ApplicationTests.Services
             _unitOfWork.Repository<Book>().Returns(Substitute.For<IGenericRepository<Book>>());
             _borrowRepository = _unitOfWork.Repository<Borrow>();
             _mapper = Substitute.For<IMapper>();
-            _borrowService = new BorrowService(_unitOfWork, _mapper);
+            _logger = Substitute.For<ILogger<IBorrowService>>();
+            _borrowService = new BorrowService(_unitOfWork, _mapper, _logger);
         }
         
         [Fact]
@@ -152,16 +155,32 @@ namespace BookLending.Tests.ApplicationTests.Services
             // Arrange
             var overdueBorrows = new List<Borrow>
             {
-                new Borrow { Status = BorrowStatus.Borrowed, RemindersSent = 0 },
-                new Borrow { Status = BorrowStatus.Borrowed, RemindersSent = 1 }
+                new Borrow {
+                    Id = 1,
+                    Status = BorrowStatus.Borrowed,
+                    DueDate = DateTime.UtcNow.AddDays(-1),
+                    RemindersSent = 1,
+                    Book = new Book { Title = "book-1" },
+                    User = new AppUser {Email = "user1@email"}
+                },
+                new Borrow { 
+                    Status = BorrowStatus.Overdue,
+                    DueDate = DateTime.UtcNow.AddDays(-2),
+                    RemindersSent = 1,
+                    Book = new Book { Title = "book-2" },
+                    User = new AppUser {Email = "user2@email"}
+                }
             };
             _borrowRepository.GetAllWithSpecAsync(Arg.Any<OverdueBorrowsSpecification>()).Returns(overdueBorrows);
+
             // Act
             await _borrowService.CheckOverdueBorrowsAsync();
+
             // Assert
             foreach (var borrow in overdueBorrows)
             {
                 Assert.Equal(BorrowStatus.Overdue, borrow.Status);
+                Assert.Equal(2, borrow.RemindersSent);
             }
         }
     }

@@ -68,7 +68,7 @@ namespace BookLending.Application.Services
     
             return await CreateTokenAsync(existingUser);
         }
-        private async Task<string> CreateTokenAsync(AppUser user)
+        public async Task<string> CreateTokenAsync(AppUser user)
         {
             // private claims (user defined)
             var authClaims = new List<Claim>
