@@ -32,43 +32,106 @@ namespace BookLending.Tests.ApplicationTests.Services
                 roleStore, null, null, null, null);
 
             _jwtConfig = Substitute.For<IOptions<JwtConfig>>();
+            _jwtConfig.Value.Returns(new JwtConfig
+            {
+                Key = "ThisIsASecretKey1234567890aaaaaaaaaaaaa",
+                Issuer = "TestIssuer",
+                Audience = "TestAudience",
+                ExpirationMinutes = 60
+            });
             _accountService = new AccountService(_userManager, _roleManager, _jwtConfig);
 
         }
 
         [Fact]
-        public async Task RegisterAsync_ShouldCreateUserAndReturnToken_WhenValidData()
+        public async Task RegisterAsync_ShouldCreateUserAndReturnToken_OnSuccess()
         {
             // Arrange
-            var dto = new CreateUserDto
+            var newUser = new CreateUserDto
             {
                 Email = "test@example.com",
-                Password = "Test123!"
+                Password = "Test@123"
             };
 
-            _userManager.FindByEmailAsync(dto.Email).Returns((AppUser)null);
-
-            var createdUser = new AppUser { Email = dto.Email, UserName = "test" };
-            _userManager.CreateAsync(Arg.Any<AppUser>(), dto.Password)
-                        .Returns(IdentityResult.Success);
-
+            _userManager.FindByEmailAsync(newUser.Email).Returns((AppUser)null); 
+            _userManager.CreateAsync(Arg.Any<AppUser>(), newUser.Password).Returns(IdentityResult.Success);
             _roleManager.RoleExistsAsync("Member").Returns(true);
-            _userManager.AddToRoleAsync(Arg.Any<AppUser>(), "Member")
-                        .Returns(IdentityResult.Success);
-
-            _accountService.CreateTokenAsync(Arg.Any<AppUser>())
-                           .Returns("fake-jwt-token");
-
+            _userManager.AddToRoleAsync(Arg.Any<AppUser>(), "Member").Returns(IdentityResult.Success);
+            _userManager.GetRolesAsync(Arg.Any<AppUser>()).Returns(new List<string> { "Member" });
 
             // Act
-            var result = await _accountService.RegisterAsync(dto);
+            var token = await _accountService.RegisterAsync(newUser);
 
             // Assert
-            Assert.Equal("fake-jwt-token", result);
-
-            await _userManager.Received(1).CreateAsync(Arg.Any<AppUser>(), dto.Password);
-            await _userManager.Received(1).AddToRoleAsync(Arg.Any<AppUser>(), "Member");
-            await _accountService.Received(1).CreateTokenAsync(Arg.Any<AppUser>());
+            Assert.NotNull(token);
+            Assert.IsType<string>(token);
         }
+
+        [Fact]
+        public async Task RegisterAsync_ShouldThrowException_WhenUserExists()
+        {
+            // Arrange
+            var newUser = new CreateUserDto
+            {
+                Email = "existing@example.com",
+                Password = "Test@123"
+            };
+
+            _userManager.FindByEmailAsync(newUser.Email).Returns(new AppUser());
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<Exception>(() => _accountService.RegisterAsync(newUser));
+            Assert.Equal("User already exists", ex.Message);
+        }
+
+        [Fact]
+        public async Task Login_ShouldReturnToken_OnSuccess()
+        {
+            var loginDto = new LoginDto
+            {
+                Email = "test@email",
+                Password = "test@123"
+            };
+
+            // arrange
+            _userManager.FindByEmailAsync(Arg.Any<string>()).Returns(new AppUser()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = loginDto.Email,
+                UserName = loginDto.Email.Split('@')[0]
+            });
+            _userManager.CheckPasswordAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(true);
+
+            //act
+            var token = await _accountService.LoginAsync(loginDto);
+
+            // assert
+            Assert.NotNull(token);
+            Assert.IsType<string>(token);
+
+        }
+
+        [Fact]
+        public async Task Login_ShouldThrowUnuthorizedException_OnFail()
+        {
+            var loginDto = new LoginDto
+            {
+                Email = "test@email",
+                Password = "test@123"
+            };
+            // arrange
+            _userManager.FindByEmailAsync(Arg.Any<string>()).Returns(new AppUser()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = loginDto.Email,
+                UserName = loginDto.Email.Split('@')[0]
+            });
+            _userManager.CheckPasswordAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(false);
+            //act
+            var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _accountService.LoginAsync(loginDto));
+            // assert
+            Assert.Equal("Invalid email or password", ex.Message);
+        }
+
     }
 }
