@@ -5,6 +5,7 @@ using BookLending.Domain.Entities;
 using BookLending.Domain.Enums;
 using BookLending.Domain.Interfaces;
 using BookLending.Domain.Specifications;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,13 @@ namespace BookLending.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<IBorrowService> _logger;
         private readonly IGenericRepository<Borrow> _borrowRepository;
-        public BorrowService(IUnitOfWork unitOfWork, IMapper mapper)
+        public BorrowService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<IBorrowService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
             _borrowRepository = unitOfWork.Repository<Borrow>();
 
         }
@@ -53,9 +56,13 @@ namespace BookLending.Application.Services
             var overdueBorrows = await _borrowRepository.GetAllWithSpecAsync(spec);
             foreach (var borrow in overdueBorrows)
             {
-                borrow.Status = BorrowStatus.Overdue;
+                if (borrow.Status == BorrowStatus.Borrowed)
+                    borrow.Status = BorrowStatus.Overdue;
+
                 borrow.RemindersSent++;
+                borrow.LastReminderDate = DateTime.UtcNow;
                 _borrowRepository.Update(borrow);
+                _logger.LogInformation($"Reminder sent for Borrow ID {borrow.Id}, Book '{borrow.Book.Title}', User '{borrow.User.Email}'");
             }
             await _unitOfWork.CompleteAsync();
             return;

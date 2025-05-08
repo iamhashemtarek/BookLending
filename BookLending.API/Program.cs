@@ -1,5 +1,6 @@
 using BookLending.API.Middlewares;
 using BookLending.Application.Interfaces;
+using BookLending.Application.Jobs;
 using BookLending.Application.Mapping;
 using BookLending.Application.Services;
 using BookLending.Common.Errors;
@@ -10,6 +11,7 @@ using BookLending.Infrastructure.Persistence;
 using BookLending.Infrastructure.Persistence.Seeding;
 using BookLending.Infrastructure.Repositories;
 using BookLending.Infrastructure.UnitOfWork;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -73,6 +75,11 @@ namespace BookLending.API
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<IBorrowService, BorrowService>();
+
+            builder.Services.AddHangfire(configuration =>
+                configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddHangfireServer();
+            builder.Services.AddScoped<OverdueBookChecker>();
 
 
             // Add Swagger Service
@@ -149,6 +156,13 @@ namespace BookLending.API
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseHangfireDashboard();
+            RecurringJob.AddOrUpdate<OverdueBookChecker>(
+                "check-overdue-books",
+                job => job.CheckOverdueBooksAsync(),
+                Cron.Minutely); 
+
             app.MapControllers(); 
 
             app.Run();

@@ -10,8 +10,7 @@ namespace BookLending.Domain.Specifications
     {
         public BookBorrowSpecification(int bookId)
         {   
-            AddCriteria(x => x.BookId == bookId);
-            AddCriteria(x => x.IsDeleted == false);
+            AddCriteria(x => x.BookId == bookId && x.IsDeleted == false);
             _AddIncludes();
         }
 

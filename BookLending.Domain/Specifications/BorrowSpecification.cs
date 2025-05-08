@@ -22,10 +22,10 @@ namespace BookLending.Domain.Specifications
                 (borrowParameters.BorrowDate == null || x.BorrowDate == borrowParameters.BorrowDate) &&
                 (borrowParameters.DueDate == null || x.DueDate == borrowParameters.DueDate) &&
                 (borrowParameters.ReturnDate == null || x.ReturnDate == borrowParameters.ReturnDate) &&
-                (borrowParameters.RemindersSent == null || x.RemindersSent == borrowParameters.RemindersSent)
+                (borrowParameters.RemindersSent == null || x.RemindersSent == borrowParameters.RemindersSent) &&
+                (x.IsDeleted == false)
             )
         {
-            AddCriteria(x => x.IsDeleted == false);
             _AddIncludes();
 
             if (!string.IsNullOrEmpty(borrowParameters.SortBy))
@@ -36,10 +36,8 @@ namespace BookLending.Domain.Specifications
             AddPaging(borrowParameters.PageNumber, borrowParameters.PageSize);
         }
 
-        public BorrowSpecification(int id) : base(x => x.Id == id)
+        public BorrowSpecification(int id) : base(x => x.Id == id && x.IsDeleted == false)
         {
-            AddCriteria(x => x.IsDeleted == false);
-
             _AddIncludes();
         }
 

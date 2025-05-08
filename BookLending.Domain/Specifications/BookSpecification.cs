@@ -31,9 +31,8 @@ namespace BookLending.Domain.Specifications
         }
 
         public BookSpecification(int bookId)
-            : base(b => b.Id == bookId)
+            : base(b => b.Id == bookId && b.IsDeleted == false)
         {
-            AddCriteria(x => x.IsDeleted == false);
         }
 
     }

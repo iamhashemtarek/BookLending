@@ -43,7 +43,7 @@ namespace BookLending.API.Controllers
             if (borrow == null)
                 return NotFound();
 
-            if (!User.IsInRole("Admin") && borrow.UserId.ToString() != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (!User.IsInRole("Admin") && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return BadRequest(new ApiErrorResponse(403));
 
             return Ok(borrow);
@@ -65,7 +65,7 @@ namespace BookLending.API.Controllers
             if (borrow == null)
                 return NotFound();
 
-            if (!User.IsInRole("Admin") && borrow.UserId.ToString() != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (!User.IsInRole("Admin") && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return BadRequest(new ApiErrorResponse(403));
 
             var returnedBorrow = await _borrowService.ReturnBookAsync(id);
