@@ -107,11 +107,14 @@ namespace BookLending.Application.Services
         {
             var borrow = await _borrowRepository.GetByIdAsync(borrowId);
             if (borrow == null)
-                throw new Exception("Borrow record not found.");
-            borrow.ReturnDate = DateTime.UtcNow;
-            borrow.Status = BorrowStatus.Returned;
-            _borrowRepository.Update(borrow);
-            await _unitOfWork.CompleteAsync();
+                return null;
+            if (borrow.Status != BorrowStatus.Returned)
+            {
+                borrow.ReturnDate = DateTime.UtcNow;
+                borrow.Status = BorrowStatus.Returned;
+                _borrowRepository.Update(borrow);
+                await _unitOfWork.CompleteAsync();
+            }
             return _mapper.Map<BorrowDto>(borrow);
         }
     }
