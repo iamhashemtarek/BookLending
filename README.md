@@ -1,7 +1,3 @@
-Here is a professional README file for the `BookLending` project:
-
----
-
 # BookLending
 
 BookLending is a comprehensive library management system designed to streamline the process of borrowing and lending books. It provides features for managing books, users, and borrowing activities, while ensuring robust error handling, authentication, and scalability.
