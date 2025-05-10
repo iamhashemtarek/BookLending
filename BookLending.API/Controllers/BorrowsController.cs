@@ -11,6 +11,7 @@ namespace BookLending.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BorrowsController : ControllerBase
     {
         private readonly IBorrowService _borrowService;
