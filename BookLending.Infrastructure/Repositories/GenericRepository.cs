@@ -50,6 +50,10 @@ namespace BookLending.Infrastructure.Repositories
             entity.IsDeleted = true;
             _dbSet.Update(entity);
         }
+        public async Task<int> CountAsync(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).CountAsync();
+        }
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
             return SpecificationEvaluator<T>.GetQuery(_dbSet, spec);

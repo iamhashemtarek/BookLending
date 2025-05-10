@@ -5,7 +5,9 @@ using BookLending.Domain.Entities;
 using BookLending.Domain.Enums;
 using BookLending.Domain.Interfaces;
 using BookLending.Domain.Specifications;
+using BookLending.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,26 +22,25 @@ namespace BookLending.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<IBorrowService> _logger;
+        private readonly IOptions<BorrowSettings> options;
         private readonly IGenericRepository<Borrow> _borrowRepository;
-        public BorrowService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<IBorrowService> logger)
+        public BorrowService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<IBorrowService> logger, IOptions<BorrowSettings> options)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            this.options = options;
             _borrowRepository = unitOfWork.Repository<Borrow>();
-
         }
         public async Task<BorrowDto?> BorrowBookAsync(string userId, BorrowBookDto borrowDto)
         {
-          
+            var availableBookSpec = new AvailableBooksSpecification(borrowDto.BookId);
+            var availableBook = await _unitOfWork.Repository<Book>().GetWithSpecAsync(availableBookSpec);
+
             var userActiveBorrowSpec = new UserActiveBorrow(userId);
-            var userActiveBorrow = await _borrowRepository.GetWithSpecAsync(userActiveBorrowSpec);
+            var userActiveBorrows = await _borrowRepository.CountAsync(userActiveBorrowSpec);
             
-
-            var bookActiveBorrowSpec = new AvailableBookActiveBorrow(borrowDto.BookId);
-            var availableBookActiveBorrow = await _borrowRepository.GetWithSpecAsync(bookActiveBorrowSpec);
-
-            if (availableBookActiveBorrow != null || userActiveBorrow != null)
+            if (availableBook == null || userActiveBorrows >= options.Value.MaxBorrowedBooks)
                 return null;
 
             var borrow = new Borrow
@@ -47,11 +48,14 @@ namespace BookLending.Application.Services
                 BookId = borrowDto.BookId,
                 UserId = userId,
                 BorrowDate = DateTime.UtcNow,
-                DueDate = DateTime.UtcNow.AddDays(7), 
+                DueDate = DateTime.UtcNow.AddDays(options.Value.MaxBorrowDurationDays), 
                 Status = BorrowStatus.Borrowed,
+                Book = availableBook,
                 RemindersSent = 0,
             };
+            availableBook.IsAvailable = false;
             await _borrowRepository.AddAsync(borrow);
+            _unitOfWork.Repository<Book>().Update(availableBook);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<BorrowDto>(borrow);
@@ -115,6 +119,12 @@ namespace BookLending.Application.Services
                 borrow.ReturnDate = DateTime.UtcNow;
                 borrow.Status = BorrowStatus.Returned;
                 _borrowRepository.Update(borrow);
+                var book = await _unitOfWork.Repository<Book>().GetByIdAsync(borrow.BookId);
+                if (book != null)
+                {
+                    book.IsAvailable = true;
+                    _unitOfWork.Repository<Book>().Update(book);
+                }
                 await _unitOfWork.CompleteAsync();
             }
             return _mapper.Map<BorrowDto>(borrow);

@@ -6,7 +6,9 @@ using BookLending.Domain.Entities;
 using BookLending.Domain.Enums;
 using BookLending.Domain.Interfaces;
 using BookLending.Domain.Specifications;
+using BookLending.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.Extensions;
 using NSubstitute.ReturnsExtensions;
@@ -25,6 +27,7 @@ namespace BookLending.Tests.ApplicationTests.Services
         private readonly IMapper _mapper;
         private readonly IBorrowService _borrowService;
         private readonly ILogger<IBorrowService> _logger;
+        private readonly IOptions<BorrowSettings> options;
         public BorrowServiceTests()
         {
             _unitOfWork = Substitute.For<IUnitOfWork>();
@@ -33,41 +36,89 @@ namespace BookLending.Tests.ApplicationTests.Services
             _borrowRepository = _unitOfWork.Repository<Borrow>();
             _mapper = Substitute.For<IMapper>();
             _logger = Substitute.For<ILogger<IBorrowService>>();
-            _borrowService = new BorrowService(_unitOfWork, _mapper, _logger);
+            options = Substitute.For<IOptions<BorrowSettings>>();
+            options.Value.Returns(new BorrowSettings
+            {
+                MaxBorrowedBooks = 1,
+                MaxBorrowDurationDays = 7
+            });
+
+            _borrowService = new BorrowService(_unitOfWork, _mapper, _logger, options);
         }
-        
+
         [Fact]
-        public async Task BorrowBookAsync_ShouldReturnBorrowDto_WhenThisUserCanBorrowThisBook()
+        public async Task BorrowBookAsync_ShouldReturnBorrowDto_WhenBookIsAvailable_AndUserHasNoActiveBorrows()
         {
             // Arrange
-            var user = new AppUser { Id = "testUserId", UserName = "testusername" };
-            var borrowDto = new BorrowBookDto { BookId = 1 };
-            var book = new Book { Id = 1, Title = "book-title", IsAvailable = true};
-            var borrow = new Borrow { BookId = 1, UserId = user.Id, Status = BorrowStatus.Borrowed, User = user, Book = book };
-            _borrowRepository.GetWithSpecAsync(Arg.Any<Specification<Borrow>>()).ReturnsNull<Borrow>();
-            _mapper.Map<BorrowDto>(borrow).Returns(new BorrowDto());
+            var userId = "user123";
+            var borrowBookDto = new BorrowBookDto { BookId = 1 };
+            var availableBook = new Book { Id = 1, IsAvailable = true };
+            var borrow = new Borrow
+            {
+                BookId = 1,
+                UserId = userId,
+                BorrowDate = DateTime.UtcNow,
+                DueDate = DateTime.UtcNow.AddDays(7),
+                Status = BorrowStatus.Borrowed,
+                Book = availableBook
+            };
+
+            _unitOfWork.Repository<Book>().GetWithSpecAsync(Arg.Any<ISpecification<Book>>())
+                .Returns(availableBook);
+
+            _borrowRepository.CountAsync(Arg.Any<ISpecification<Borrow>>())
+                .Returns(0);
+
+            _mapper.Map<BorrowDto>(Arg.Any<Borrow>()).Returns(new BorrowDto
+            {
+                BookId = 1,
+                UserId = userId,
+            });
+
             // Act
-            var result = await _borrowService.BorrowBookAsync(user.Id, borrowDto);
+            var result = await _borrowService.BorrowBookAsync(userId, borrowBookDto);
+
             // Assert
-            await _borrowRepository.Received(2).GetWithSpecAsync(Arg.Any<Specification<Borrow>>());   
-            Assert.Equal(borrowDto.BookId, borrow.BookId);
-            Assert.Equal(user.Id, borrow.UserId);
-            Assert.Equal(BorrowStatus.Borrowed, borrow.Status);
-         
+            Assert.NotNull(result);
+            Assert.Equal(userId, result.UserId);
+            Assert.Equal(1, result.BookId);
 
+            await _borrowRepository.Received(1).AddAsync(Arg.Any<Borrow>());
+            await _unitOfWork.Received(1).CompleteAsync();
+            _unitOfWork.Repository<Book>().Received(1).Update(availableBook);
         }
 
         [Fact]
-        public async Task BorrowBookAsync_ShouldReturnNull_WhenBookIsBorrowedOrUserHasBorrow()
+        public async Task BorrowBookAsync_ShouldReturnNull_WhenBookIsNotAvailable()
         {
             // Arrange
-            var user = new AppUser { Id = "testUserId", UserName = "testusername" };
-            var borrowDto = new BorrowBookDto { BookId = 1 };
-            var book = new Book { Id = 1, Title = "book-title", IsAvailable = true };
-            var borrow = new Borrow { BookId = 1, UserId = user.Id, Status = BorrowStatus.Borrowed, User = user, Book = book };
-            _borrowRepository.GetWithSpecAsync(Arg.Any<Specification<Borrow>>()).ReturnsForAnyArgs(borrow);
+            _unitOfWork.Repository<Book>().GetWithSpecAsync(Arg.Any<ISpecification<Book>>())
+                .Returns((Book?)null);
+
+            _borrowRepository.CountAsync(Arg.Any<ISpecification<Borrow>>())
+                .Returns(0);
+
             // Act
-            var result = await _borrowService.BorrowBookAsync(user.Id, borrowDto);
+            var result = await _borrowService.BorrowBookAsync("user123", new BorrowBookDto { BookId = 1 });
+
+            // Assert
+            Assert.Null(result);
+            await _borrowRepository.DidNotReceive().AddAsync(Arg.Any<Borrow>());
+        }
+
+        [Fact]
+        public async Task BorrowBookAsync_ShouldReturnNull_WhenUserReachedMaxBorrowLimit()
+        {
+            // Arrange
+            _unitOfWork.Repository<Book>().GetWithSpecAsync(Arg.Any<ISpecification<Book>>())
+                .Returns(new Book { Id = 1, IsAvailable = true });
+
+            _borrowRepository.CountAsync(Arg.Any<ISpecification<Borrow>>())
+                .Returns(1); // == MaxBorrowedBooks
+
+            // Act
+            var result = await _borrowService.BorrowBookAsync("user123", new BorrowBookDto { BookId = 1 });
+
             // Assert
             Assert.Null(result);
             await _borrowRepository.DidNotReceive().AddAsync(Arg.Any<Borrow>());

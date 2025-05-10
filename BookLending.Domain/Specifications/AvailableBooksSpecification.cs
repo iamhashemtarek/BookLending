@@ -14,5 +14,9 @@ namespace BookLending.Domain.Specifications
         {
             AddOrderBy(b => b.Title);
         }
+        public AvailableBooksSpecification(int id)
+            : base(b => b.IsAvailable == true && b.IsDeleted == false && b.Id == id)
+        {
+        }
     }
 }

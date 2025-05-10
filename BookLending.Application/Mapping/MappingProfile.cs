@@ -20,7 +20,6 @@ namespace BookLending.Application.Mapping
             // Borrow mappings
             CreateMap<Borrow, BorrowDto>()
                 .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
         }
     }

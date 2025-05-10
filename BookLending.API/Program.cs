@@ -42,6 +42,7 @@ namespace BookLending.API
             // Config
             builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
             builder.Services.Configure<SystemAdminCredentialsConfig>(builder.Configuration.GetSection("SystemAdminCredentials"));
+            builder.Services.Configure<BorrowSettings>(builder.Configuration.GetSection("BorrowSettings"));
 
             // Add services to the container.
             builder.Services.AddDbContext<BookLendingDbContext>(options =>
