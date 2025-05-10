@@ -158,7 +158,10 @@ namespace BookLending.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+            });
             RecurringJob.AddOrUpdate<OverdueBookChecker>(
                 "check-overdue-books",
                 job => job.CheckOverdueBooksAsync(),

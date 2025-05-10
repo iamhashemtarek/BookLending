@@ -12,7 +12,17 @@ namespace BookLending.API.Controllers
     {
         public IActionResult Error(int statusCode)
         {
-            return NotFound(new ApiErrorResponse(statusCode));
+            var response = new ApiErrorResponse(statusCode);
+
+            return statusCode switch
+            {
+                400 => BadRequest(response),
+                401 => Unauthorized(response),
+                403 => Forbid(),
+                404 => NotFound(response),
+                500 => StatusCode(500, response),
+                _ => StatusCode(statusCode, response)
+            };
         }
     }
 }
