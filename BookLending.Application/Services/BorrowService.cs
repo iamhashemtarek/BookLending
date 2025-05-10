@@ -31,13 +31,15 @@ namespace BookLending.Application.Services
         }
         public async Task<BorrowDto?> BorrowBookAsync(string userId, BorrowBookDto borrowDto)
         {
-            var book = await _unitOfWork.Repository<Book>().GetByIdAsync(borrowDto.BookId);
-            if (book == null || book.IsAvailable == false)  
-                return null;
+          
+            var userActiveBorrowSpec = new UserActiveBorrow(userId);
+            var userActiveBorrow = await _borrowRepository.GetWithSpecAsync(userActiveBorrowSpec);
+            
 
-            var spec = new BookBorrowSpecification(borrowDto.BookId);
-            var existingBorrows = await _borrowRepository.GetAllWithSpecAsync(spec);
-            if (existingBorrows.Any(b => b.Status == BorrowStatus.Borrowed || b.Status == BorrowStatus.Overdue))
+            var bookActiveBorrowSpec = new AvailableBookActiveBorrow(borrowDto.BookId);
+            var availableBookActiveBorrow = await _borrowRepository.GetWithSpecAsync(bookActiveBorrowSpec);
+
+            if (availableBookActiveBorrow != null || userActiveBorrow != null)
                 return null;
 
             var borrow = new Borrow
