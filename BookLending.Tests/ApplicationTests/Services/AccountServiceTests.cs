@@ -55,9 +55,9 @@ namespace BookLending.Tests.ApplicationTests.Services
 
             _userManager.FindByEmailAsync(newUser.Email).Returns((AppUser)null); 
             _userManager.CreateAsync(Arg.Any<AppUser>(), newUser.Password).Returns(IdentityResult.Success);
-            _roleManager.RoleExistsAsync("Member").Returns(true);
-            _userManager.AddToRoleAsync(Arg.Any<AppUser>(), "Member").Returns(IdentityResult.Success);
-            _userManager.GetRolesAsync(Arg.Any<AppUser>()).Returns(new List<string> { "Member" });
+            _roleManager.RoleExistsAsync(AppRoles.Member).Returns(true);
+            _userManager.AddToRoleAsync(Arg.Any<AppUser>(), AppRoles.Member).Returns(IdentityResult.Success);
+            _userManager.GetRolesAsync(Arg.Any<AppUser>()).Returns(new List<string> { AppRoles.Member });
 
             // Act
             var token = await _accountService.RegisterAsync(newUser);

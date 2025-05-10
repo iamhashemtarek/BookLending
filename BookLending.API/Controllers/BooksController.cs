@@ -1,5 +1,6 @@
 ﻿using BookLending.Application.DTOs;
 using BookLending.Application.Interfaces;
+using BookLending.Common.Constants;
 using BookLending.Common.Errors;
 using BookLending.Domain.Specifications;
 using Microsoft.AspNetCore.Authorization;
@@ -44,7 +45,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<BookDto>> CreateBook(CreateBookDto bookDto)
         {
             var book = await _bookService.AddBookAsync(bookDto);
@@ -52,7 +53,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> UpdateBook(int id, CreateBookDto bookDto)
         {
             await _bookService.UpdateBookAsync(id, bookDto);
@@ -60,7 +61,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> DeleteBook(int id)
         {
             await _bookService.DeleteBookAsync(id);

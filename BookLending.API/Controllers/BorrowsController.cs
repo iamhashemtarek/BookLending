@@ -1,5 +1,6 @@
 ﻿using BookLending.Application.DTOs;
 using BookLending.Application.Interfaces;
+using BookLending.Common.Constants;
 using BookLending.Common.Errors;
 using BookLending.Domain.Specifications;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,7 @@ namespace BookLending.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BorrowDto>>> GetBorrows([FromQuery] BorrowParameters borrowParameters)
         {
-            if (User.IsInRole("Admin"))
+            if (User.IsInRole(AppRoles.Admin))
             {
                 var borrows = await _borrowService.GetAllBorrowsAsync(borrowParameters);
                 return Ok(borrows);
@@ -44,7 +45,7 @@ namespace BookLending.API.Controllers
             if (borrow == null)
                 return NotFound();
 
-            if (!User.IsInRole("Admin") && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (!User.IsInRole(AppRoles.Admin) && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return BadRequest(new ApiErrorResponse(403));
 
             return Ok(borrow);
@@ -66,7 +67,7 @@ namespace BookLending.API.Controllers
             if (borrow == null)
                 return NotFound();
 
-            if (!User.IsInRole("Admin") && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (!User.IsInRole(AppRoles.Admin) && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return BadRequest(new ApiErrorResponse(403));
 
             var returnedBorrow = await _borrowService.ReturnBookAsync(id);
@@ -74,7 +75,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpGet("users/{userId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<IEnumerable<BorrowDto>>> GetUserBorrows(string userId)
         {
             var borrows = await _borrowService.GetUserBorrowsAsync(userId);
@@ -82,7 +83,7 @@ namespace BookLending.API.Controllers
         }
 
         [HttpGet("books/{bookId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<IEnumerable<BorrowDto>>> GetBookBorrows(int bookId)
         {
             var borrows = await _borrowService.GetBookBorrowHistoryAsync(bookId);

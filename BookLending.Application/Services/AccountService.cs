@@ -49,9 +49,9 @@ namespace BookLending.Application.Services
             if (!userCreationresult.Succeeded)
                 throw new Exception("User registration failed");
            
-            if(await _roleManager.RoleExistsAsync("Member"))
+            if(await _roleManager.RoleExistsAsync(AppRoles.Member))
             {
-                var roleCreationResult = await _userManager.AddToRoleAsync(user, "Member");
+                var roleCreationResult = await _userManager.AddToRoleAsync(user, AppRoles.Member);
                 if (!roleCreationResult.Succeeded)
                     throw new Exception("Failed to assign role to user");
             }

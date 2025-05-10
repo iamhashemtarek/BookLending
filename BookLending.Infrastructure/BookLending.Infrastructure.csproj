@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BookLending.Common\BookLending.Common.csproj" />
     <ProjectReference Include="..\BookLending.Domain\BookLending.Domain.csproj" />
   </ItemGroup>
 

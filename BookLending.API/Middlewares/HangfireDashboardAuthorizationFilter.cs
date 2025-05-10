@@ -1,4 +1,5 @@
-﻿using Hangfire.Dashboard;
+﻿using BookLending.Common.Constants;
+using Hangfire.Dashboard;
 
 namespace BookLending.API.Middlewares
 {
@@ -8,7 +9,7 @@ namespace BookLending.API.Middlewares
         {
             var httpContext = context.GetHttpContext();
             return httpContext.User.Identity?.IsAuthenticated == true &&
-                           httpContext.User.IsInRole("Admin");
+                           httpContext.User.IsInRole(AppRoles.Admin);
         }
     }
 }
