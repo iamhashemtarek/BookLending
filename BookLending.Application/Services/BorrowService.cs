@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BookLending.Application.DTOs;
+using BookLending.Application.Features.Borrows.DTOs;
 using BookLending.Application.Interfaces;
 using BookLending.Domain.Entities;
 using BookLending.Domain.Enums;

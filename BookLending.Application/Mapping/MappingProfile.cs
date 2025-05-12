@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using BookLending.Application.DTOs;
 using BookLending.Application.Features.Books.DTOs;
+using BookLending.Application.Features.Borrows.DTOs;
 using BookLending.Domain.Entities;
 using System;
 using System.Collections.Generic;
