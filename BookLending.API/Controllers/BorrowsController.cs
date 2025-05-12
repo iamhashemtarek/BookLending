@@ -22,12 +22,10 @@ namespace BookLending.API.Controllers
     [Authorize]
     public class BorrowsController : ControllerBase
     {
-        private readonly IBorrowService _borrowService;
         private readonly IMediator _mediator;
 
         public BorrowsController(IBorrowService borrowService, IMediator mediator)
         {
-            _borrowService = borrowService;
             _mediator = mediator;
         }
 
