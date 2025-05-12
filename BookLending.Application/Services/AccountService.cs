@@ -1,5 +1,6 @@
 ﻿using BookLending.Application.DTOs;
 using BookLending.Application.Interfaces;
+using BookLending.Common.Constants;
 using BookLending.Domain.Entities;
 using BookLending.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -81,13 +82,14 @@ namespace BookLending.Application.Services
             foreach (var role in userRoles)
                 authClaims.Add(new Claim(ClaimTypes.Role, role));
 
+
             // public claims (standard)
             var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Value.Key));
             var token = new JwtSecurityToken(
                 issuer: _jwtConfig.Value.Issuer,
                 audience: _jwtConfig.Value.Audience,
                 claims: authClaims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.Value.ExpirationMinutes),
+                expires: DateTime.Now.AddMinutes(_jwtConfig.Value.ExpiryInMinutes),
                 signingCredentials: new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256)
             );
 

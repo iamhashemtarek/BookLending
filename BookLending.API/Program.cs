@@ -66,7 +66,8 @@ namespace BookLending.API
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                        ClockSkew = TimeSpan.Zero // Remove delay of token expiration
                     };
                 });
 
@@ -158,10 +159,11 @@ namespace BookLending.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseHangfireDashboard("/hangfire", new DashboardOptions
-            {
-                Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
-            });
+            //app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            //{
+            //    Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+            //});
+            app.UseHangfireDashboard();
             RecurringJob.AddOrUpdate<OverdueBookChecker>(
                 "check-overdue-books",
                 job => job.CheckOverdueBooksAsync(),
