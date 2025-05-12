@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace BookLending.Infrastructure.Repositories
 {
-    class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
+    public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
     {
         private readonly BookLendingDbContext _context;
         private readonly DbSet<T> _dbSet;

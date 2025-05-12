@@ -1,4 +1,4 @@
-﻿using BookLending.Application.DTOs;
+﻿using BookLending.Application.Features.Books.DTOs;
 using BookLending.Domain.Specifications;
 using System;
 using System.Collections.Generic;

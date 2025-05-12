@@ -9,26 +9,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookLending.Application.Features.Books.Commands.CreateBook
+namespace BookLending.Application.Features.Books.Commands.UpdateBook
 {
-    public class CreateBookHandler : IRequestHandler<CreateBookCommand, BookDto>
+    public class UpdateBookHandler : IRequestHandler<UpdateBookCommand>
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper _mapper;
         private readonly IWriteRepository<Book> _bookRepository;
-        public CreateBookHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateBookHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             _mapper = mapper;
             _bookRepository = unitOfWork.WriteRepository<Book>();
         }
-        public async Task<BookDto> Handle(CreateBookCommand request, CancellationToken cancellationToken)
+
+        public async Task Handle(UpdateBookCommand request, CancellationToken cancellationToken)
         {
             var book = _mapper.Map<Book>(request.CreateBookDto);
-            await _bookRepository.AddAsync(book);
+            book.Id = request.Id;
+            _bookRepository.Update(book);
             await unitOfWork.CompleteAsync();
-            return _mapper.Map<BookDto>(book);
+            return;
         }
     }
-
 }

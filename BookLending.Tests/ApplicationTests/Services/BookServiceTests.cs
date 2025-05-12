@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookLending.Application.DTOs;
+using BookLending.Application.Features.Books.DTOs;
 using BookLending.Application.Interfaces;
 using BookLending.Application.Services;
 using BookLending.Domain.Entities;

@@ -1,6 +1,7 @@
 ﻿using BookLending.Application.DTOs;
 using BookLending.Application.Interfaces;
 using BookLending.Application.Services;
+using BookLending.Common.Constants;
 using BookLending.Domain.Entities;
 using BookLending.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Identity;
@@ -37,7 +38,7 @@ namespace BookLending.Tests.ApplicationTests.Services
                 Key = "ThisIsASecretKey1234567890aaaaaaaaaaaaa",
                 Issuer = "TestIssuer",
                 Audience = "TestAudience",
-                ExpirationMinutes = 60
+                ExpiryInMinutes = 60
             });
             _accountService = new AccountService(_userManager, _roleManager, _jwtConfig);
 

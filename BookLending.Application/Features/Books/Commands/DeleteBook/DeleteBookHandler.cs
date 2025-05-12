@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using BookLending.Application.Features.Books.DTOs;
 using BookLending.Domain.Entities;
 using BookLending.Domain.Interfaces;
 using MediatR;
@@ -9,26 +8,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookLending.Application.Features.Books.Commands.CreateBook
+namespace BookLending.Application.Features.Books.Commands.DeleteBook
 {
-    public class CreateBookHandler : IRequestHandler<CreateBookCommand, BookDto>
+    public class DeleteBookHandler : IRequestHandler<DeleteBookCommand>
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper _mapper;
         private readonly IWriteRepository<Book> _bookRepository;
-        public CreateBookHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public DeleteBookHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             _mapper = mapper;
             _bookRepository = unitOfWork.WriteRepository<Book>();
         }
-        public async Task<BookDto> Handle(CreateBookCommand request, CancellationToken cancellationToken)
+        public async Task Handle(DeleteBookCommand request, CancellationToken cancellationToken)
         {
-            var book = _mapper.Map<Book>(request.CreateBookDto);
-            await _bookRepository.AddAsync(book);
+            var book = await _bookRepository.GetByIdAsyncTracked(request.Id);
+            _bookRepository.Delete(book);
             await unitOfWork.CompleteAsync();
-            return _mapper.Map<BookDto>(book);
+            return;
         }
     }
-
 }
