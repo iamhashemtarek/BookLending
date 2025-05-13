@@ -1,8 +1,15 @@
-﻿using BookLending.Application.DTOs;
+﻿using BookLending.Application.Features.Borrows.Commands.BorrowBook;
+using BookLending.Application.Features.Borrows.Commands.ReturnBook;
+using BookLending.Application.Features.Borrows.DTOs;
+using BookLending.Application.Features.Borrows.Queries.GetAllBorrows;
+using BookLending.Application.Features.Borrows.Queries.GetBookBorrowHistoryById;
+using BookLending.Application.Features.Borrows.Queries.GetBorrowById;
+using BookLending.Application.Features.Borrows.Queries.GetUserBorrowHistoryById;
 using BookLending.Application.Interfaces;
 using BookLending.Common.Constants;
 using BookLending.Common.Errors;
 using BookLending.Domain.Specifications;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +22,11 @@ namespace BookLending.API.Controllers
     [Authorize]
     public class BorrowsController : ControllerBase
     {
-        private readonly IBorrowService _borrowService;
+        private readonly IMediator _mediator;
 
-        public BorrowsController(IBorrowService borrowService)
+        public BorrowsController(IBorrowService borrowService, IMediator mediator)
         {
-            _borrowService = borrowService;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -27,13 +34,13 @@ namespace BookLending.API.Controllers
         {
             if (User.IsInRole(AppRoles.Admin))
             {
-                var borrows = await _borrowService.GetAllBorrowsAsync(borrowParameters);
+                var borrows = await _mediator.Send(new GetAllBorrowsQuery(borrowParameters));
                 return Ok(borrows);
             }
             else
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var borrows = await _borrowService.GetUserBorrowsAsync(userId);
+                var borrows = await _mediator.Send(new GetUserBorrowHistoryByIdQuery(userId));
                 return Ok(borrows);
             }
         }
@@ -41,7 +48,7 @@ namespace BookLending.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BorrowDto>> GetBorrow(int id)
         {
-            var borrow = await _borrowService.GetBorrowByIdAsync(id);
+            var borrow = await _mediator.Send(new GetBorrowByIdQuery(id));
             if (borrow == null)
                 return NotFound();
 
@@ -56,21 +63,21 @@ namespace BookLending.API.Controllers
         public async Task<ActionResult<BorrowDto>> BorrowBook(BorrowBookDto borrowDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var borrow = await _borrowService.BorrowBookAsync(userId, borrowDto);
+            var borrow = await _mediator.Send(new BorrowBookCommand(userId, borrowDto));    
             return Ok(borrow);
         }
 
         [HttpPut("{id}/return")]
         public async Task<ActionResult<BorrowDto>> ReturnBook(int id)
         {
-            var borrow = await _borrowService.GetBorrowByIdAsync(id);
+            var borrow = await _mediator.Send(new GetBorrowByIdQuery(id));
             if (borrow == null)
                 return NotFound();
 
             if (!User.IsInRole(AppRoles.Admin) && borrow.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return BadRequest(new ApiErrorResponse(403));
 
-            var returnedBorrow = await _borrowService.ReturnBookAsync(id);
+            var returnedBorrow = await _mediator.Send(new ReturnBookCommand(id));
             return Ok(returnedBorrow);
         }
 
@@ -78,7 +85,7 @@ namespace BookLending.API.Controllers
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<IEnumerable<BorrowDto>>> GetUserBorrows(string userId)
         {
-            var borrows = await _borrowService.GetUserBorrowsAsync(userId);
+            var borrows = await _mediator.Send(new GetUserBorrowHistoryByIdQuery(userId));
             return Ok(borrows);
         }
 
@@ -86,7 +93,7 @@ namespace BookLending.API.Controllers
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<IEnumerable<BorrowDto>>> GetBookBorrows(int bookId)
         {
-            var borrows = await _borrowService.GetBookBorrowHistoryAsync(bookId);
+            var borrows = await _mediator.Send(new GetBookBorrowHistoryByIdQuery(bookId));
             return Ok(borrows);
         }
     }

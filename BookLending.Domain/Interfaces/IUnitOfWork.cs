@@ -10,6 +10,8 @@ namespace BookLending.Domain.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<T> Repository<T>() where T : BaseEntity;
+        IReadRepository<T> ReadRepository<T>() where T : BaseEntity;
+        IWriteRepository<T> WriteRepository<T>() where T : BaseEntity;
         Task<int> CompleteAsync();
     }   
 }

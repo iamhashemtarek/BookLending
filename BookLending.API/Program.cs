@@ -20,7 +20,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 using System.Text;
+using BookLending.Application;
+using BookLending.Application.Features.Books.Queries.GetBookById;
+
 
 namespace BookLending.API
 {
@@ -72,6 +76,8 @@ namespace BookLending.API
                 });
 
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
+            builder.Services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddAutoMapper(config => config.AddProfile(new MappingProfile()));
             builder.Services.AddScoped<IAccountService, AccountService>();
@@ -82,6 +88,10 @@ namespace BookLending.API
                 configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddHangfireServer();
             builder.Services.AddScoped<OverdueBookChecker>();
+
+            // MediatR for all
+
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetBookByIdHandler).Assembly));
 
 
             // Add Swagger Service
