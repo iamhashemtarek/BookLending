@@ -31,6 +31,8 @@ namespace BookLending.Infrastructure.Persistence.Configuration
                 .WithMany(user => user.Borrows)
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasQueryFilter(builder => !builder.IsDeleted);
         }
     }
 }
